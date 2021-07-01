@@ -9,6 +9,7 @@ import io.muic.ooc.webapp.servlet.AddUserServlet;
 import io.muic.ooc.webapp.servlet.HomeServlet;
 import io.muic.ooc.webapp.service.SecurityService;
 import io.muic.ooc.webapp.servlet.LoginServlet;
+import io.muic.ooc.webapp.servlet.RemoveUserServlet;
 import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
 
@@ -28,6 +29,7 @@ public class ServletRouter {
         routables.add(HomeServlet.class);
         routables.add(LoginServlet.class);
         routables.add(AddUserServlet.class);
+        routables.add(RemoveUserServlet.class);
     }
 
     private SecurityService securityService;
@@ -44,9 +46,7 @@ public class ServletRouter {
                 String name = routable.getClass().getSimpleName();
                 Tomcat.addServlet(ctx, name, (HttpServlet) routable);
                 ctx.addServletMapping(routable.getMapping(), name);
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         }

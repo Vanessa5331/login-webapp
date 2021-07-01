@@ -46,33 +46,11 @@ public class HomeServlet extends HttpServlet implements Routable {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String logout = request.getParameter("logout");
         if (logout != null) {
             securityService.logout(request);
             response.sendRedirect("/");
-        } else {
-            for (String username: securityService.getUserTable().keySet()) {
-                String button = request.getParameter(username);
-                if (button != null) {
-                    if (!username.equals(request.getSession().getAttribute("username"))) {
-                        securityService.removeUser(username);
-                        String message = "Successfully removed user";
-                        request.setAttribute("message", message);
-                        String userTable = securityService.showUserTable();
-                        request.setAttribute("userTable", userTable);
-                        RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/home.jsp");
-                        rd.include(request, response);
-                    } else {
-                        String error = "Cannot remove your own account";
-                        request.setAttribute("error", error);
-                        String userTable = securityService.showUserTable();
-                        request.setAttribute("userTable", userTable);
-                        RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/home.jsp");
-                        rd.include(request, response);
-                    }
-                }
-            }
         }
     }
 }
