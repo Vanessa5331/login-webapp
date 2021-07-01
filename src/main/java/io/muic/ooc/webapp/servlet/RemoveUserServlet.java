@@ -28,22 +28,24 @@ public class RemoveUserServlet extends HttpServlet implements Routable {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         boolean authorized = securityService.isAuthorized(request);
         if (authorized) {
-            for (String username: securityService.getUserTable().keySet()) {
-                String button = request.getParameter(username);
-                if (button != null) {
-                    if (!username.equals(request.getSession().getAttribute("username"))) {
-                        request.setAttribute("removeUser", username);
-                        RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/remove-user.jsp");
-                        rd.include(request, response);
-                    } else {
-                        String error = "Cannot remove your own account";
-                        request.setAttribute("error", error);
-                        String userTable = securityService.showUserTable();
-                        request.setAttribute("userTable", userTable);
-                        RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/home.jsp");
-                        rd.include(request, response);
-                    }
+            String remove = request.getParameter("remove");
+            if (remove != null) {
+                String user = (String) request.getSession().getAttribute("username");
+                String removeUser = request.getParameter("removeUser");
+                if (!user.equals(removeUser)) {
+                    request.setAttribute("removeUser", removeUser);
+                    RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/remove-user.jsp");
+                    rd.include(request, response);
+                } else {
+                    String error = "Cannot remove your own account";
+                    request.setAttribute("error", error);
+                    String userTable = securityService.showUserTable();
+                    request.setAttribute("userTable", userTable);
+                    RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/home.jsp");
+                    rd.include(request, response);
                 }
+            } else {
+                response.sendRedirect("/");
             }
         } else {
             response.sendRedirect("/login");

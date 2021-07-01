@@ -39,7 +39,11 @@ public class SecurityService {
         sb.append( "<table style=\"width:40%\">" );
         sb.append("<tr><th>Username</th>");
         for (Map.Entry<String, String> entry : userCredentials.entrySet()){
-            sb.append("<tr><td>" + entry.getKey() + "</td><td><form action=\"/remove-user\" method=\"get\"><input type=\"submit\" name=\"" + entry.getKey() + "\" value=\"Remove\"> </form></td></tr>");
+            sb.append("<tr><td>" + entry.getKey() +
+                    "</td><td><form action=\"/remove-user\" method=\"get\">" +
+                    "<input type=\"submit\" name=\"remove\" value=\"Remove\"> " +
+                    "<input type=\"hidden\" name=\"removeUser\" value=\"" + entry.getKey() + "\">"+
+                    "</form></td></tr>");
         }
         sb.append("</table>");
         return sb.toString();
