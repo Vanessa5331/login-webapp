@@ -5,13 +5,15 @@
  */
 package io.muic.ooc.webapp.service;
 
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.lang.StringUtils;
+
+import at.favre.lib.crypto.bcrypt.BCrypt;
 
 public class SecurityService {
     private Connection con;
@@ -22,9 +24,11 @@ public class SecurityService {
         con = DBConnection.init();
         st = con.prepareStatement("insert into user values(?, ?, ?)");
 
+        String hashedPassword = BCrypt.with(new SecureRandom()).hashToString(12, password.toCharArray());
+
         st.setString(1, username);
         st.setString(2, null);
-        st.setString(3, password);
+        st.setString(3, hashedPassword);
         st.executeUpdate();
 
         st.close();
@@ -86,18 +90,17 @@ public class SecurityService {
             rs = st.executeQuery();
             rs.next();
 
-            String passwordInDB = rs.getString("hash");
+            String hashedPassword = rs.getString("hash");
 
             st.close();
             con.close();
-            if (StringUtils.equals(password, passwordInDB)) {
+            if (BCrypt.verifyer().verify(password.toCharArray(), hashedPassword).verified) {
                 request.getSession().setAttribute("username", username);
                 return true;
             } else {
                 return false;
             }
         } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
             return false;
         }
     }
