@@ -38,6 +38,8 @@ public class HomeServlet extends HttpServlet implements Routable {
             request.setAttribute("username", username);
             String userTable = securityService.showUserTable();
             request.setAttribute("userTable", userTable);
+            String userInfo = securityService.showUserInfo(username);
+            request.setAttribute("userInfo", userInfo);
             RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/home.jsp");
             rd.include(request, response);
         } else {
