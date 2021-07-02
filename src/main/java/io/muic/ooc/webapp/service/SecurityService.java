@@ -5,44 +5,69 @@
  */
 package io.muic.ooc.webapp.service;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 
-/**
- *
- * @author gigadot
- */
 public class SecurityService {
-    
-    private Map<String, String> userCredentials = new HashMap<String, String>() {{
-        put("admin", "123456");
-        put("muic", "1111");
-    }};
+    private Connection con;
+    private PreparedStatement st;
+    private ResultSet rs;
 
-    public void addUser(String username, String password) {
-        userCredentials.put(username, password);
+    public void addUser(String username, String password) throws SQLException, ClassNotFoundException {
+        con = DBConnection.init();
+        st = con.prepareStatement("insert into user values(?, ?, ?)");
+
+        st.setString(1, username);
+        st.setString(2, null);
+        st.setString(3, password);
+        st.executeUpdate();
+
+        st.close();
+        con.close();
     }
 
-    public void removeUser(String username) {
-        userCredentials.remove(username);
+    public void removeUser(String username) throws SQLException, ClassNotFoundException {
+        con = DBConnection.init();
+        st = con.prepareStatement(String.format("delete from user where username='%s'", username));
+        st.executeUpdate();
+
+        st.close();
+        con.close();
     }
 
-    public Map<String, String> getUserTable() {
-        return userCredentials;
+    public Set<String> getUsers() {
+        Set<String> users = new HashSet<>();
+        try {
+            con = DBConnection.init();
+            st = con.prepareStatement("select username from user");
+            rs = st.executeQuery();
+
+            while(rs.next()) {
+                users.add(rs.getString("username"));
+            }
+
+            st.close();
+            con.close();
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return users;
     }
 
     public String showUserTable(){
-        // for testing only
         StringBuilder sb = new StringBuilder();
         sb.append( "<table style=\"width:40%\">" );
         sb.append("<tr><th>Username</th>");
-        for (Map.Entry<String, String> entry : userCredentials.entrySet()){
-            sb.append("<tr><td>" + entry.getKey() +
+        for (String user : getUsers()){
+            sb.append("<tr><td>" + user +
                     "</td><td><form action=\"/remove-user\" method=\"get\">" +
                     "<input type=\"submit\" name=\"remove\" value=\"Remove\"> " +
-                    "<input type=\"hidden\" name=\"removeUser\" value=\"" + entry.getKey() + "\">"+
+                    "<input type=\"hidden\" name=\"removeUser\" value=\"" + user + "\">"+
                     "</form></td></tr>");
         }
         sb.append("</table>");
@@ -50,19 +75,29 @@ public class SecurityService {
     }
     
     public boolean isAuthorized(HttpServletRequest request) {
-        String username = (String) request.getSession()
-                .getAttribute("username");
-        // do checking
-       return (username != null && userCredentials.containsKey(username));
+        String username = (String) request.getSession().getAttribute("username");
+        return (username != null && getUsers().contains(username));
     }
     
     public boolean authenticate(String username, String password, HttpServletRequest request) {
-        String passwordInDB = userCredentials.get(username);
-        boolean isMatched = StringUtils.equals(password, passwordInDB);
-        if (isMatched) {
-            request.getSession().setAttribute("username", username);
-            return true;
-        } else {
+        try {
+            con = DBConnection.init();
+            st = con.prepareStatement(String.format("select username, hash from user where username='%s'", username));
+            rs = st.executeQuery();
+            rs.next();
+
+            String passwordInDB = rs.getString("hash");
+
+            st.close();
+            con.close();
+            if (StringUtils.equals(password, passwordInDB)) {
+                request.getSession().setAttribute("username", username);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
             return false;
         }
     }

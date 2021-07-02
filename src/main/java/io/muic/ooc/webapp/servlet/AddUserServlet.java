@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class AddUserServlet extends HttpServlet implements Routable {
 
@@ -49,9 +50,14 @@ public class AddUserServlet extends HttpServlet implements Routable {
             RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/add-user.jsp");
             rd.include(request, response);
         } else {
-            securityService.addUser(username, password);
-            String message = "Successfully added user";
-            request.setAttribute("message", message);
+            try {
+                securityService.addUser(username, password);
+                String message = "Successfully added " + username;
+                request.setAttribute("message", message);
+            } catch (SQLException | ClassNotFoundException e) {
+                String error = "Failed to remove " + username;
+                request.setAttribute("error", error);
+            }
             RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/add-user.jsp");
             rd.include(request, response);
         }

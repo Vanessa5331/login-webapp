@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class RemoveUserServlet extends HttpServlet implements Routable {
 
@@ -57,9 +58,15 @@ public class RemoveUserServlet extends HttpServlet implements Routable {
         String username = request.getParameter("removeUser");
         String remove = request.getParameter("remove");
         if (remove != null) {
-            securityService.removeUser(username);
-            String message = "Successfully removed " + username;
-            request.setAttribute("message", message);
+            try {
+                securityService.removeUser(username);
+                String message = "Successfully removed " + username;
+                request.setAttribute("message", message);
+            } catch (SQLException | ClassNotFoundException throwables) {
+                throwables.printStackTrace();
+                String error = "Failed to remove " + username;
+                request.setAttribute("error", error);
+            }
             String userTable = securityService.showUserTable();
             request.setAttribute("userTable", userTable);
             RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/home.jsp");
