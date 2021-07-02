@@ -55,7 +55,7 @@ public class AddUserServlet extends HttpServlet implements Routable {
                 String message = "Successfully added " + username;
                 request.setAttribute("message", message);
             } catch (SQLException | ClassNotFoundException e) {
-                String error = "Failed to remove " + username;
+                String error = "Failed to add " + username;
                 request.setAttribute("error", error);
             }
             RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/add-user.jsp");
