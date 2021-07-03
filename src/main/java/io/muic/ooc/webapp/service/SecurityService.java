@@ -41,6 +41,10 @@ public class SecurityService {
     }
 
     public void editUser(String column, String username, String info) throws SQLException, ClassNotFoundException {
+        if (column.equals("password")) {
+            info = BCrypt.with(new SecureRandom()).hashToString(12, info.toCharArray());
+        }
+
         con = DBConnection.init();
         st = con.prepareStatement(String.format("update user set %s='%s' where username='%s'", column, info, username));
         st.executeUpdate();
@@ -97,7 +101,7 @@ public class SecurityService {
         for (String user : getUsers()){
             sb.append("<tr><td>" + user +
                     "</td><td style=\"padding-top:20px\"><form action=\"/remove-user\" method=\"get\">" +
-                    "<input type=\"submit\" name=\"remove\" value=\"Remove\"" +
+                    "<input type=\"submit\" name=\"remove\" value=\"Remove\">" +
                     "<input type=\"hidden\" name=\"removeUser\" value=\"" + user + "\">"+
                     "</form></td></tr>");
         }
