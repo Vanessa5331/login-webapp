@@ -62,7 +62,7 @@ public class EditUserServlet extends HttpServlet implements Routable {
                 if(!StringUtils.isBlank(newUsername)) {
                     securityService.editUser("username", username, newUsername);
                     username = newUsername;
-                    request.setAttribute("username", username);
+                    request.getSession().setAttribute("username", username);
                 }
                 if(!StringUtils.isBlank(newFirstname)) {
                     securityService.editUser("firstname", username, newFirstname);

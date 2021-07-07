@@ -39,13 +39,8 @@ public class RemoveUserServlet extends HttpServlet implements Routable {
                     rd.include(request, response);
                 } else {
                     String error = "Cannot remove your own account";
-                    request.setAttribute("error", error);
-                    String userTable = securityService.showUserTable();
-                    request.setAttribute("userTable", userTable);
-                    String userInfo = securityService.showUserInfo(user);
-                    request.setAttribute("userInfo", userInfo);
-                    RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/home.jsp");
-                    rd.include(request, response);
+                    request.getSession().setAttribute("error", error);
+                    response.sendRedirect("/");
                 }
             } else {
                 response.sendRedirect("/");
@@ -56,7 +51,7 @@ public class RemoveUserServlet extends HttpServlet implements Routable {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String user = (String) request.getSession().getAttribute("username");
         String removeUser = request.getParameter("removeUser");
         String remove = request.getParameter("remove");
@@ -64,20 +59,13 @@ public class RemoveUserServlet extends HttpServlet implements Routable {
             try {
                 securityService.removeUser(removeUser);
                 String message = "Successfully removed " + removeUser;
-                request.setAttribute("message", message);
+                request.getSession().setAttribute("message", message);
             } catch (SQLException | ClassNotFoundException e) {
                 e.printStackTrace();
                 String error = "Failed to remove " + removeUser;
-                request.setAttribute("error", error);
+                request.getSession().setAttribute("error", error);
             }
-            String userTable = securityService.showUserTable();
-            request.setAttribute("userTable", userTable);
-            String userInfo = securityService.showUserInfo(user);
-            request.setAttribute("userInfo", userInfo);
-            RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/home.jsp");
-            rd.include(request, response);
-        } else {
-            response.sendRedirect("/");
         }
+        response.sendRedirect("/");
     }
 }
